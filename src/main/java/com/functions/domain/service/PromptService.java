@@ -1,5 +1,5 @@
 package com.functions.domain.service;
 
 public interface PromptService {
-    String execute(String text);
+    String create(String text);
 }

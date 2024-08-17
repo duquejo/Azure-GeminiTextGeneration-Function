@@ -1,19 +1,15 @@
-package com.functions.domain.model;
+package com.functions.application.command.prompt;
 
 
+import com.functions.application.command.Command;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-public class RequestModel {
+public class CreatePromptCommand implements Command {
     @NotEmpty
     @NotNull
     private String text;
-
     public String getText() {
         return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
     }
 }

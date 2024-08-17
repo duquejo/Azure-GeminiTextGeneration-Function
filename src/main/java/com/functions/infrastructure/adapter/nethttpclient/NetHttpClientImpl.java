@@ -3,7 +3,7 @@ package com.functions.infrastructure.adapter.nethttpclient;
 import static java.net.http.HttpRequest.BodyPublishers.ofString;
 
 import com.functions.infrastructure.adapter.HttpClient;
-import com.functions.infrastructure.util.JsonUtilities;
+import com.functions.infrastructure.util.JsonUtils;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -20,7 +20,7 @@ public class NetHttpClientImpl implements HttpClient {
     @Override
     public String invoke(URI uri, Object payload) {
         try {
-            String strPayload = JsonUtilities.objectAsAString(payload);
+            String strPayload = JsonUtils.objectAsAString(payload);
             HttpRequest request = buildRequest(uri, strPayload);
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             return response.body();

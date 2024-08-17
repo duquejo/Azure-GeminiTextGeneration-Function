@@ -6,9 +6,10 @@
 
 package com.functions;
 
-import com.functions.application.command.PromptHandler;
+import com.functions.application.command.CommandHandler;
+import com.functions.domain.model.CommandResult;
 import com.functions.application.validation.ValidateRequest;
-import com.functions.domain.model.RequestModel;
+import com.functions.application.command.prompt.CreatePromptCommand;
 import com.functions.infrastructure.factory.DependencyFactory;
 import com.microsoft.azure.functions.*;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
@@ -32,21 +33,20 @@ public class Function {
             methods = HttpMethod.GET,
             authLevel = AuthorizationLevel.FUNCTION
         )
-        HttpRequestMessage<Optional<RequestModel>> req,
+        HttpRequestMessage<Optional<CreatePromptCommand>> req,
         final ExecutionContext context) {
 
         Locale.setDefault(Locale.ENGLISH);
 
-        RequestModel request = req.getBody().orElse(null);
+        CreatePromptCommand request = req.getBody().orElse(null);
 
         try {
             // Validate requests
-            RequestModel validated = ValidateRequest.validate(request);
+            CreatePromptCommand validated = ValidateRequest.validate(request);
 
             // Dependencies factory startup
-            PromptHandler handler = DependencyFactory.createPromptHandler();
-
-            String response = handler.execute(validated.getText());
+            CommandHandler<CreatePromptCommand> createPromptCommandCommandHandler = DependencyFactory.createPromptHandler();
+            CommandResult response = createPromptCommandCommandHandler.handle(validated);
 
             return req.createResponseBuilder(HttpStatus.OK)
                 .header("Content-Type", "application/json")

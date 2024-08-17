@@ -2,6 +2,7 @@ package com.functions.domain.service;
 
 import com.functions.application.factory.PromptFactory;
 import com.functions.infrastructure.adapter.HttpClient;
+import com.functions.infrastructure.util.StringUtils;
 
 import java.net.URI;
 import java.util.Map;
@@ -16,8 +17,8 @@ public class PromptServiceImpl implements PromptService {
         this.httpClient = client;
     }
 
-    public String execute(String text) {
-        URI uri = URI.create(String.format("%s?key=%s", url, apiKey));
+    public String create(String text) {
+        URI uri = StringUtils.simpleFormatUri(url, apiKey);
         Map<String, Object> payload = PromptFactory.create(text);
         return httpClient.invoke(uri, payload);
     }
