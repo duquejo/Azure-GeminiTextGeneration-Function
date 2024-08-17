@@ -6,7 +6,7 @@
 
 package com.functions;
 
-import com.functions.application.handler.PromptHandler;
+import com.functions.application.command.PromptHandler;
 import com.functions.application.validation.ValidateRequest;
 import com.functions.domain.model.RequestModel;
 import com.functions.infrastructure.factory.DependencyFactory;

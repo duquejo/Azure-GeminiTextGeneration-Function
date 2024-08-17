@@ -23,9 +23,6 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:3.3.3'
 }
 
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
-
 compileJava.options.encoding = 'UTF-8'
 
 repositories {
@@ -39,7 +36,6 @@ azurefunctions {
     region = 'westus'
     runtime {
       os = 'Windows'
-      javaVersion = 'Java 17'
     }
     auth {
       type = 'azure_cli'

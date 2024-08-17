@@ -1,6 +1,6 @@
 package com.functions.infrastructure.factory;
 
-import com.functions.application.handler.PromptHandler;
+import com.functions.application.command.PromptHandler;
 import com.functions.domain.service.PromptService;
 import com.functions.domain.service.PromptServiceImpl;
 import com.functions.infrastructure.adapter.HttpClient;

@@ -1,4 +1,4 @@
-package com.functions.application.handler;
+package com.functions.application.command;
 
 import com.functions.domain.service.PromptService;
 
