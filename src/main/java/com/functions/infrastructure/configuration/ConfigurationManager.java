@@ -1,6 +1,6 @@
 package com.functions.infrastructure.configuration;
 
-import com.functions.domain.exception.MisconfigurationException;
+import com.functions.domain.exception.InvalidConfigParameter;
 
 import java.util.List;
 import java.util.Properties;
@@ -10,19 +10,19 @@ public class ConfigurationManager {
     private static ConfigurationManager instance = null;
     private final Properties properties;
 
-    public ConfigurationManager() throws MisconfigurationException {
+    public ConfigurationManager() throws InvalidConfigParameter {
         properties = new Properties();
 
         for (String mandatoryKey : extractKeys()) {
             String value = System.getenv(mandatoryKey);
             if (value == null) {
-                throw new MisconfigurationException(String.format("[%s]: Undefined environment variable", mandatoryKey));
+                throw new InvalidConfigParameter(String.format("[%s]: Undefined environment variable", mandatoryKey));
             }
             properties.setProperty(mandatoryKey, value);
         }
     }
 
-    public static ConfigurationManager getInstance() throws MisconfigurationException {
+    public static ConfigurationManager getInstance() throws InvalidConfigParameter {
         if( instance == null ) {
             instance = new ConfigurationManager();
         }

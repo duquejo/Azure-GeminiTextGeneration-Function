@@ -1,7 +1,7 @@
 package com.functions.infrastructure.configuration;
 
 import com.functions.application.ports.input.CreatePromptUseCase;
-import com.functions.domain.exception.MisconfigurationException;
+import com.functions.domain.exception.InvalidConfigParameter;
 import com.functions.domain.factory.PromptFactory;
 import com.functions.domain.factory.PromptFactoryImpl;
 import com.functions.domain.service.PromptService;
@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class DependencyFactory {
 
-    public static CreatePromptUseCase createPromptUseCase() throws MisconfigurationException {
+    public static CreatePromptUseCase createPromptUseCase() throws InvalidConfigParameter {
 
         ConfigurationManager configurationManager = ConfigurationManager.getInstance();
         HttpClient client = new NetHttpClientFactory().create();

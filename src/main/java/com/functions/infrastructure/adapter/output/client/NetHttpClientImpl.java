@@ -2,6 +2,7 @@ package com.functions.infrastructure.adapter.output.client;
 
 import static java.net.http.HttpRequest.BodyPublishers.ofString;
 
+import com.functions.domain.model.gemini.GeminiResponse;
 import com.functions.infrastructure.util.JsonUtils;
 import java.io.IOException;
 import java.net.URI;
@@ -17,18 +18,13 @@ public class NetHttpClientImpl implements HttpClient {
     }
 
     @Override
-    public String invoke(URI uri, Object payload) {
-        try {
+    public GeminiResponse invoke(URI uri, Object payload) throws IOException, InterruptedException {
             String strPayload = JsonUtils.objectAsAString(payload);
             HttpRequest request = buildRequest(uri, strPayload);
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            return response.body();
-        } catch (IOException ex) {
-            return ex.getMessage();
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            return ex.getMessage();
-        }
+            String body = response.body();
+
+            return JsonUtils.stringAsObject(body);
     }
 
     private HttpRequest buildRequest(URI uri, String strBody) {

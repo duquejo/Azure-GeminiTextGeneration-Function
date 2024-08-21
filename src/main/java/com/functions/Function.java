@@ -7,9 +7,7 @@
 package com.functions;
 
 import com.functions.application.ports.input.CreatePromptUseCase;
-import com.functions.domain.exception.MisconfigurationException;
-import com.functions.domain.exception.ValidationException;
-import com.functions.infrastructure.adapter.input.PromptRestAdapter;
+import com.functions.infrastructure.adapter.input.FunctionInputAdapter;
 import com.functions.domain.model.PromptRequest;
 import com.functions.domain.model.PromptResponse;
 import com.functions.infrastructure.configuration.DependencyFactory;
@@ -39,46 +37,46 @@ public class Function {
 
         PromptRequest request = req.getBody().orElse(null);
 
-        // @TODO Gestión de errores
-
         try {
             CreatePromptUseCase promptUseCase = DependencyFactory.createPromptUseCase();
-            PromptRestAdapter restAdapter = new PromptRestAdapter(promptUseCase);
+            FunctionInputAdapter functionInputAdapter = new FunctionInputAdapter(promptUseCase);
+            PromptResponse response = functionInputAdapter.execute(request);
 
-            PromptResponse response = restAdapter.execute(request);
+            context.getLogger().info(response.toString());
 
-            return req.createResponseBuilder(HttpStatus.OK)
+            return req.createResponseBuilder(response.getStatus())
                 .header("Content-Type", "application/json")
                 .body(response)
                 .build();
+        } catch (InterruptedException iEx) {
+            context.getLogger().warning(iEx.getMessage());
 
-        } catch (MisconfigurationException | ValidationException misEx) {
+            Thread.currentThread().interrupt();
 
-            HashMap<String, Object> response = new LinkedHashMap<>();
+            PromptResponse response = PromptResponse.builder()
+                .message(iEx.getMessage())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .prompt(request.getText())
+                .build();
 
-            response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.name());
-            response.put("code", HttpStatus.INTERNAL_SERVER_ERROR.value());
-            response.put("errors", misEx.getMessage());
-
-            return req.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR)
+            return req.createResponseBuilder(response.getStatus())
                 .header("Content-Type", "application/json")
                 .body(response)
                 .build();
-
         } catch (Exception ex) {
+
             context.getLogger().warning(ex.getMessage());
 
-            HashMap<String, Object> response = new LinkedHashMap<>();
+            PromptResponse response = PromptResponse.builder()
+                .message(ex.getMessage())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .prompt(request.getText())
+                .build();
 
-            response.put("status", HttpStatus.BAD_REQUEST.name());
-            response.put("code", HttpStatus.BAD_REQUEST.value());
-            response.put("errors", ex.getMessage());
-
-            return req.createResponseBuilder(HttpStatus.BAD_REQUEST)
+            return req.createResponseBuilder(response.getStatus())
                 .header("Content-Type", "application/json")
                 .body(response)
                 .build();
-
         }
     }
 }

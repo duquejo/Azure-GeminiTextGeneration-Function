@@ -3,6 +3,7 @@ package com.functions.domain.service;
 import com.functions.application.ports.input.CreatePromptUseCase;
 import com.functions.domain.exception.ValidationException;
 import com.functions.domain.factory.PromptFactory;
+import com.functions.domain.model.gemini.GeminiResponse;
 import com.functions.infrastructure.adapter.output.client.HttpClient;
 import com.functions.domain.model.PromptRequest;
 import com.functions.domain.model.PromptResponse;
@@ -11,6 +12,7 @@ import com.functions.infrastructure.util.StringUtils;
 import com.microsoft.azure.functions.HttpStatus;
 import lombok.RequiredArgsConstructor;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 
@@ -23,7 +25,7 @@ public class PromptService implements CreatePromptUseCase {
     private final ConfigurationManager configurationManager;
 
     @Override
-    public PromptResponse createPrompt(PromptRequest prompt) throws ValidationException {
+    public PromptResponse createPrompt(PromptRequest prompt) throws ValidationException, IOException, InterruptedException {
 
         PromptRequest promptRequest = validationService.validate(prompt);
 
@@ -34,8 +36,8 @@ public class PromptService implements CreatePromptUseCase {
         );
         Map<String, Object> payload = promptFactory.create(promptToSearch);
 
-        String promptResponse = httpClient.invoke(uri, payload);
+        GeminiResponse response = httpClient.invoke(uri, payload);
 
-        return new PromptResponse(promptToSearch, promptResponse, HttpStatus.OK);
+        return new PromptResponse(promptToSearch, response, HttpStatus.OK);
     }
 }
