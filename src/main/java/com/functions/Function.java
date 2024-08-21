@@ -7,6 +7,8 @@
 package com.functions;
 
 import com.functions.application.ports.input.CreatePromptUseCase;
+import com.functions.domain.exception.MisconfigurationException;
+import com.functions.domain.exception.ValidationException;
 import com.functions.infrastructure.adapter.input.PromptRestAdapter;
 import com.functions.domain.model.PromptRequest;
 import com.functions.domain.model.PromptResponse;
@@ -37,6 +39,8 @@ public class Function {
 
         PromptRequest request = req.getBody().orElse(null);
 
+        // @TODO Gestión de errores
+
         try {
             CreatePromptUseCase promptUseCase = DependencyFactory.createPromptUseCase();
             PromptRestAdapter restAdapter = new PromptRestAdapter(promptUseCase);
@@ -44,6 +48,19 @@ public class Function {
             PromptResponse response = restAdapter.execute(request);
 
             return req.createResponseBuilder(HttpStatus.OK)
+                .header("Content-Type", "application/json")
+                .body(response)
+                .build();
+
+        } catch (MisconfigurationException | ValidationException misEx) {
+
+            HashMap<String, Object> response = new LinkedHashMap<>();
+
+            response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.name());
+            response.put("code", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.put("errors", misEx.getMessage());
+
+            return req.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR)
                 .header("Content-Type", "application/json")
                 .body(response)
                 .build();
@@ -61,6 +78,7 @@ public class Function {
                 .header("Content-Type", "application/json")
                 .body(response)
                 .build();
+
         }
     }
 }
