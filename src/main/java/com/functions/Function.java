@@ -6,20 +6,17 @@
 
 package com.functions;
 
-import com.functions.application.command.CommandHandler;
-import com.functions.domain.model.CommandResult;
-import com.functions.application.validation.ValidateRequest;
-import com.functions.application.command.prompt.CreatePromptCommand;
-import com.functions.infrastructure.factory.DependencyFactory;
+import com.functions.application.ports.input.CreatePromptUseCase;
+import com.functions.infrastructure.adapter.input.PromptRestAdapter;
+import com.functions.domain.model.PromptRequest;
+import com.functions.domain.model.PromptResponse;
+import com.functions.infrastructure.configuration.DependencyFactory;
 import com.microsoft.azure.functions.*;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.HttpTrigger;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Azure Functions with HTTP Trigger.
@@ -33,20 +30,18 @@ public class Function {
             methods = HttpMethod.GET,
             authLevel = AuthorizationLevel.FUNCTION
         )
-        HttpRequestMessage<Optional<CreatePromptCommand>> req,
+        HttpRequestMessage<Optional<PromptRequest>> req,
         final ExecutionContext context) {
 
         Locale.setDefault(Locale.ENGLISH);
 
-        CreatePromptCommand request = req.getBody().orElse(null);
+        PromptRequest request = req.getBody().orElse(null);
 
         try {
-            // Validate requests
-            CreatePromptCommand validated = ValidateRequest.validate(request);
+            CreatePromptUseCase promptUseCase = DependencyFactory.createPromptUseCase();
+            PromptRestAdapter restAdapter = new PromptRestAdapter(promptUseCase);
 
-            // Dependencies factory startup
-            CommandHandler<CreatePromptCommand> createPromptCommandCommandHandler = DependencyFactory.createPromptHandler();
-            CommandResult response = createPromptCommandCommandHandler.handle(validated);
+            PromptResponse response = restAdapter.execute(request);
 
             return req.createResponseBuilder(HttpStatus.OK)
                 .header("Content-Type", "application/json")

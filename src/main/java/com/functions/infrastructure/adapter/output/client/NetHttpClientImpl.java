@@ -1,8 +1,7 @@
-package com.functions.infrastructure.adapter.nethttpclient;
+package com.functions.infrastructure.adapter.output.client;
 
 import static java.net.http.HttpRequest.BodyPublishers.ofString;
 
-import com.functions.infrastructure.adapter.HttpClient;
 import com.functions.infrastructure.util.JsonUtils;
 import java.io.IOException;
 import java.net.URI;
