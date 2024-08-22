@@ -1,19 +1,12 @@
 package com.functions.domain.model;
 
-
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
 
-public class RequestModel {
+@Getter
+public class PromptRequest {
     @NotEmpty
     @NotNull
     private String text;
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
 }

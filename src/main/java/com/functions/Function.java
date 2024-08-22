@@ -6,19 +6,17 @@
 
 package com.functions;
 
-import com.functions.application.handler.PromptHandler;
-import com.functions.application.validation.ValidateRequest;
-import com.functions.domain.model.RequestModel;
-import com.functions.infrastructure.factory.DependencyFactory;
+import com.functions.application.ports.input.CreatePromptUseCase;
+import com.functions.infrastructure.adapter.input.FunctionInputAdapter;
+import com.functions.domain.model.PromptRequest;
+import com.functions.domain.model.PromptResponse;
+import com.functions.infrastructure.configuration.DependencyFactory;
 import com.microsoft.azure.functions.*;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.HttpTrigger;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Azure Functions with HTTP Trigger.
@@ -32,37 +30,50 @@ public class Function {
             methods = HttpMethod.GET,
             authLevel = AuthorizationLevel.FUNCTION
         )
-        HttpRequestMessage<Optional<RequestModel>> req,
+        HttpRequestMessage<Optional<PromptRequest>> req,
         final ExecutionContext context) {
 
         Locale.setDefault(Locale.ENGLISH);
 
-        RequestModel request = req.getBody().orElse(null);
+        PromptRequest request = req.getBody().orElse(null);
 
         try {
-            // Validate requests
-            RequestModel validated = ValidateRequest.validate(request);
+            CreatePromptUseCase promptUseCase = DependencyFactory.createPromptUseCase();
+            FunctionInputAdapter functionInputAdapter = new FunctionInputAdapter(promptUseCase);
+            PromptResponse response = functionInputAdapter.execute(request);
 
-            // Dependencies factory startup
-            PromptHandler handler = DependencyFactory.createPromptHandler();
+            context.getLogger().info(response.toString());
 
-            String response = handler.execute(validated.getText());
-
-            return req.createResponseBuilder(HttpStatus.OK)
+            return req.createResponseBuilder(response.getStatus())
                 .header("Content-Type", "application/json")
                 .body(response)
                 .build();
+        } catch (InterruptedException iEx) {
+            context.getLogger().warning(iEx.getMessage());
 
+            Thread.currentThread().interrupt();
+
+            PromptResponse response = PromptResponse.builder()
+                .message(iEx.getMessage())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .prompt(request.getText())
+                .build();
+
+            return req.createResponseBuilder(response.getStatus())
+                .header("Content-Type", "application/json")
+                .body(response)
+                .build();
         } catch (Exception ex) {
+
             context.getLogger().warning(ex.getMessage());
 
-            HashMap<String, Object> response = new LinkedHashMap<>();
+            PromptResponse response = PromptResponse.builder()
+                .message(ex.getMessage())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .prompt(request.getText())
+                .build();
 
-            response.put("status", HttpStatus.BAD_REQUEST.name());
-            response.put("code", HttpStatus.BAD_REQUEST.value());
-            response.put("errors", ex.getMessage());
-
-            return req.createResponseBuilder(HttpStatus.BAD_REQUEST)
+            return req.createResponseBuilder(response.getStatus())
                 .header("Content-Type", "application/json")
                 .body(response)
                 .build();

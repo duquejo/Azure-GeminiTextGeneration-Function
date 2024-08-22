@@ -1,4 +1,4 @@
-package com.functions.application.validation;
+package com.functions.domain.exception;
 
 public class ValidationException extends Exception {
     public ValidationException(String message) {
